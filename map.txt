@@ -1,0 +1,15 @@
+click : 753;554
+click : 468;79
+click : 1919;0
+click : 1139;1043
+click : 1284;1048
+click : 932;574
+click : 1273;1041
+click : 1136;1063
+click : 1277;1066
+click : 1027;581
+click : 1919;2
+click : 1150;1051
+click : 1284;1050
+click : 1213;1065
+click : 1216;1062

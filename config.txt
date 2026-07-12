@@ -1,2 +1,2 @@
 a : b
-dimensions : 1080x720
+dimensions : 1920x1080
