@@ -2,34 +2,49 @@ import tkinter as tk
 from tkinter import*
 from tkinter import ttk, filedialog
 from PIL import Image, ImageTk
-import os, pyautogui, pytesseract
+import os, pyautogui, pytesseract, pygetwindow
 from PIL import Image
 from time import sleep, time
 import webbrowser
 from pynput import mouse, keyboard
 from tkinter.messagebox import showinfo
 
+#           CHECK BACKGROUND SOURCE !!!!
+
 #open config file
 #print("A")
-config=open("config.txt", "r+", encoding="UTF-8")
-lines=config.readlines()
-for line in lines:
-    line.strip()
-    sp=line.split(" : ")
-    #print(sp)
-    if sp[0]=="dimensions":
-        dim=sp[1].strip()
-    if sp[0]=="background":
-        background_route=sp[1]
+with open("config.txt", "r+", encoding="UTF-8") as config:
+    lines=config.readlines()
+    for line in lines:
+        line.strip()
+        sp=line.split(" : ")
+        #print(sp)
+        if sp[0]=="dimensions":
+            dim=sp[1].strip()
+            dim.split()
+        if sp[0]=="background":
+            background_route=sp[1].strip()
+            background_route.split()
+            print(background_route)
 
 #creating variables that will be used later
 stop_track=False
 mouse_moved=0
 
-def back_ground(window, image_path):
+def back_ground(window, image_path, dim):
     image=Image.open(image_path)
-    image=image.resize((window.winfo_screenwidth(), window.winfo_screenheight()))
-    photo=ImageTk.PhotoImage(image)
+    (width, height)=image.size
+    x, y=dim.split("x")
+    x, y=int(x), int(y)
+    if (x>y and height>width) or (y>x and height>width):
+        r=y/height
+        x=int(r*width)
+    else:
+        r=x/width
+        y=int(r*height)
+    print(x, y)
+    image_rs=image.resize([x, y])
+    photo=ImageTk.PhotoImage(image_rs)
     background_label=tk.Label(window, image=photo)
     background_label.image=photo
     background_label.place(relwidth=1, relheight=1)
@@ -45,12 +60,12 @@ window=tk.Tk()
 window.title("Start Assistant")
 try:
     window.geometry(dim)
+    #print(dim)
 except:
     window.geometry("1080x720")
-try:
-    back_ground(background_route)
-except:
-    back_ground(window, 'C:/dev/startassist/start.jpg')
+
+#back_ground(window, background_route, dim)
+back_ground(window, 'C:/dev/startassist/start.jpg', dim)
 
 buttonhoverstyle=ttk.Style()
 buttonhoverstyle.configure("buttonStyle.TButton",
@@ -67,9 +82,16 @@ def Macondo():
     
 def start_mouse_track():
     print("A")
+    global clock
+    clock=int(time())
+    s=pygetwindow.getAllTitles()
+    for window in s:
+        if window!="":
+            window=pygetwindow.getWindowsWithTitle(window)[0]
+            window.minimize()
     mouse_listener=mouse.Listener(
         on_click=mouse_track,
-        on_move=mouse_move
+        #on_move=mouse_move
     )
     mouse_listener.start()
     s=0
@@ -78,17 +100,22 @@ def start_mouse_track():
             mouse_listener.stop()
             #mouse_listener.join()
             print("E")
-            s+=1
-            sleep(1)
             return
+        s+=1
+        sleep(float(1))
     mouse_listener.stop()
     #mouse_listener.join()
 
 def mouse_track(x, y, button, pressed):
+    global clock
+    delta=int(time())-clock
+    clock=int(time())
+    print(clock, delta)
     if button==mouse.Button.left and pressed:
-        print("mouse button pressed", pressed, button)
+        focus=pygetwindow.getActiveWindowTitle()
+        print("mouse button pressed", button, delta)
         with open("map.txt", "a+") as file:
-            file.write(f"click : {x};{y}\n")
+            file.write(f"click, {x};{y}, {delta}, {focus}\n")
 
 def mouse_move(x, y):
     global mouse_moved
@@ -123,31 +150,99 @@ def overwrite(param, param2, conf):
         return
 
 def save_config(param, **kwargs):
-    containes=False
-    if param=="dimensions":
-        widget=kwargs.get("widget")
-        win=kwargs.get("win")
-        conf=widget.get("1.0", "end-1c")
-        for line in lines:
-            sp=line.split(" : ")
-            #print(sp)
-            if sp[0]=="dimensions":
-                overwrite(sp[0], sp[1], conf)
-                containes=True
-        if containes==False:
-            config.write(f"\ndimensions : {conf}")
-        win.destroy()
-    elif param=="background":
-        conf=kwargs.get("conf")
-        for line in lines:
-            sp=line.split(" : ")
-            #print(sp)
-            if sp[0]=="background":
-                overwrite(sp[0], sp[1], conf)
-                containes=True
-        if containes==False:
-            config.write(f"background : {conf}\n")
+    with open("config.txt", "a+") as config:
+        containes=False
+        if param=="dimensions":
+            widget=kwargs.get("widget")
+            win=kwargs.get("win")
+            win=window
+            conf=widget.get("1.0", "end-1c")
+            for line in lines:
+                sp=line.split(" : ")
+                #print(sp)
+                if sp[0]=="dimensions":
+                    overwrite(sp[0], sp[1], conf)
+                    containes=True
+            if containes==False:
+                config.write(f"\ndimensions : {conf}")
+            win.destroy()
+        elif param=="background":
+            conf=kwargs.get("conf")
+            for line in lines:
+                sp=line.split(" : ")
+                #print(sp)
+                if sp[0]=="background":
+                    print("A")
+                    overwrite(sp[0], sp[1], conf)
+                    containes=True
+            if containes==False:
+                print("B")
+                config.write(f"background : {conf}\n")
+        elif param=="action":
+            widget=kwargs.get("widget")
+            win=kwargs.get("win")
+            conf=widget.get("1.0", "end-1c")
+            with open("map.txt", "a") as file:
+                file.write(f"!, action, {conf}\n")
+            win.destroy()
+            start_mouse_track()
     showinfo("Changes in config", "Saved changes successfully in config.txt")
+
+def retrieve_textinput(widget, win):
+    text=widget.get("1.0", "end")
+    win.destroy()
+    return text
+
+def execute_record(record, win=window):
+    win.destroy()
+    s=pygetwindow.getAllTitles()
+    for window in s:
+        if window!="":
+            window=pygetwindow.getWindowsWithTitle(window)[0]
+            #window.minimize()
+    rec=False
+    print(record)
+    with open("map.txt") as file:
+        for line in file:
+            sp=line.split(", ")
+            print(sp)
+            if sp[0]=="!" and sp[2].strip()==record:
+                rec=True
+                print(rec)
+            elif rec==True:
+                if sp[0]=="!":
+                    return
+                [x,y]=sp[1].split(";")
+                sp[2]=sp[2].strip()
+                pyautogui.leftClick(int(x), int(y))                                
+                print(int(x), int(y), int(sp[2]))
+                sleep(int(sp[2]))
+
+def choose_action():
+    action_list=[]
+    with open("map.txt") as file:
+        for line in file:
+            if line.split(", ")[0]=="!":
+                action_list.append(line.split(", ")[2].strip())
+                print(line.split(" ")[1].strip())
+    print(action_list)
+    chgwin=Toplevel(window, takefocus=True)
+    chgwin.geometry("400x120")
+    for action in action_list:
+        iterbutton=Button(chgwin, width=10, height=1, text=action, command=lambda: execute_record(action, chgwin))
+        iterbutton.pack()
+    label=Label(chgwin, text="Choose the action that you want to execute:")
+    label.pack()
+
+def start_record():
+    chgwin=Toplevel(window, takefocus=True)
+    chgwin.geometry("400x120")
+    label=Label(chgwin, text="Write here the name of the new action:")
+    dimensions=Text(chgwin, height=3, width=30)
+    save=Button(chgwin, width=10, height=1, bg="green", text="Save", command=lambda: save_config(param="action", widget=dimensions, win=chgwin))
+    label.pack()
+    dimensions.pack()
+    save.pack()
 
 def chg_dim():
     chgwin=Toplevel(window, takefocus=True)
@@ -180,6 +275,8 @@ buttons1=[
     ["change_back", "Change background", change_background],
     ["gmail", "Gmail", gmail],
     ["macondo", "Macondo", Macondo],
+    ["start_record", "Start recording actions", start_record],
+    ["execute_record", "Execute record", choose_action],
     ["exit", "Exit", ex]
 ]
 for name, title, command in buttons1:
