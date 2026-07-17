@@ -1,11 +1,13 @@
 import tkinter as tk
 from tkinter import*
 from tkinter import ttk, filedialog
+import customtkinter
+from customtkinter import *
 from PIL import Image, ImageTk
 import os, pyautogui, pytesseract, pygetwindow
 from PIL import Image
 from time import sleep, time
-import webbrowser
+import webbrowser, pywinstyles
 from pynput import mouse, keyboard
 from tkinter.messagebox import showinfo
 
@@ -30,7 +32,10 @@ with open("config.txt", "r+", encoding="UTF-8") as config:
 #creating variables that will be used later
 stop_track=False
 mouse_moved=0
+button_obj_list=[]
+settings_obj_list=[]
 
+#creating functions
 def back_ground(window, image_path, dim):
     image=Image.open(image_path)
     (width, height)=image.size
@@ -56,8 +61,9 @@ def findImg(img_path, minSearchTime, confidence):
     x, y=center
     return x, y
 
-window=tk.Tk()
+window=customtkinter.CTk()
 window.title("Start Assistant")
+window._set_appearance_mode("dark")
 try:
     window.geometry(dim)
     #print(dim)
@@ -65,13 +71,7 @@ except:
     window.geometry("1080x720")
 
 #back_ground(window, background_route, dim)
-back_ground(window, 'C:/dev/startassist/start.jpg', dim)
-
-buttonhoverstyle=ttk.Style()
-buttonhoverstyle.configure("buttonStyle.TButton",
-                         width=20,
-                         height=5,
-                         background="#98BBE9")
+#back_ground(window, 'C:/dev/startassist/start.jpg', dim)
 
 #def enter(event):
 #    event.widget.config(style=)
@@ -96,13 +96,9 @@ def start_mouse_track():
     mouse_listener.start()
     s=0
     while s<=10:
-        if stop_track==True:
-            mouse_listener.stop()
-            #mouse_listener.join()
-            print("E")
-            return
         s+=1
         sleep(float(1))
+    
     mouse_listener.stop()
     #mouse_listener.join()
 
@@ -214,9 +210,10 @@ def execute_record(record, win=window):
                     return
                 [x,y]=sp[1].split(";")
                 sp[2]=sp[2].strip()
+                sleep(int(sp[2]))
                 pyautogui.leftClick(int(x), int(y))                                
                 print(int(x), int(y), int(sp[2]))
-                sleep(int(sp[2]))
+        print("End of action")
 
 def choose_action():
     action_list=[]
@@ -226,35 +223,38 @@ def choose_action():
                 action_list.append(line.split(", ")[2].strip())
                 print(line.split(" ")[1].strip())
     print(action_list)
-    chgwin=Toplevel(window, takefocus=True)
+    chgwin=CTkToplevel(window, takefocus=True)
     chgwin.geometry("400x120")
     for action in action_list:
-        iterbutton=Button(chgwin, width=10, height=1, text=action, command=lambda: execute_record(action, chgwin))
+        iterbutton=CTkButton(chgwin, width=10, height=1, text=action, command=lambda: execute_record(action, chgwin))
         iterbutton.pack()
-    label=Label(chgwin, text="Choose the action that you want to execute:")
+    label=CTkLabel(chgwin, text="Choose the action that you want to execute:")
     label.pack()
 
 def start_record():
     chgwin=Toplevel(window, takefocus=True)
     chgwin.geometry("400x120")
-    label=Label(chgwin, text="Write here the name of the new action:")
+    label=CTkLabel(chgwin, width=10, justify="left", text="You have 10 seconds to record your actions.\n If you need more time choose Continue in the pop-up window.\nWrite here the name of the new action:")
     dimensions=Text(chgwin, height=3, width=30)
-    save=Button(chgwin, width=10, height=1, bg="green", text="Save", command=lambda: save_config(param="action", widget=dimensions, win=chgwin))
+    save=CTkButton(chgwin, width=10, height=1, text="Save", command=lambda: save_config(param="action", widget=dimensions, win=chgwin))
     label.pack()
     dimensions.pack()
     save.pack()
 
 def chg_dim():
-    chgwin=Toplevel(window, takefocus=True)
+    chgwin=CTkToplevel(master=window, takefocus=True)
+    chgwin.after(100, chgwin.lift)
     label=Label(chgwin, text="Write here the new dimensions \n in widthxheight format e.g 1080x720")
     dimensions=Text(chgwin, height=50, width=100)
-    save=Button(chgwin, width=50, height=25, bg="green", command=lambda: save_config(param="dimensions", widget=dimensions, win=chgwin))
+    save=CTkButton(chgwin, width=50, height=25, command=lambda: save_config(param="dimensions", widget=dimensions, win=chgwin))
     label.pack()
     dimensions.pack()
     save.pack()
+    
 
 def change_background():
-    chgwin=Toplevel(window, takefocus=True)
+    chgwin=CTkToplevel(window, takefocus=True)
+    chgwin.after(100, chgwin.lift)
     label=Label(chgwin, text="Select the new background \n supported file format is jpg")
     label.pack()
     background=filedialog.askopenfile(title="Select the new background", filetypes=[("JPEG", "*.jpg")])
@@ -262,25 +262,67 @@ def change_background():
     save_config(param="background", win=chgwin, conf=background)
     print(background)
 
-buttons=[
-    ("button_1", "Gmail"),
-    ("button_2", "Macondo")
-]
+def exit_setup():
+    for button in settings_obj_list:
+        button.destroy()
+    start()
+
+def settings():
+    for button in button_obj_list:
+        button.destroy()
+    settings_list=[
+        ["change_dim","Change dimensions of the window", "", chg_dim],
+        ["change_back", "Change background", "", change_background],
+        ["exit", "Exit", "arrow.png", exit_setup]
+    ]
+    for n, (name, title, picture, command) in enumerate(settings_list):
+        if picture!="":
+            image=Image.open(picture)
+            photo=CTkImage(image, image)
+            iterbutton=CTkButton(window, command=command, fg_color="#48484D", 
+                            bg_color="#000001", border_color="#1E1D66", border_width=1.5,
+                            width=220, anchor="w", image=photo, text=title)
+        else:
+            iterbutton=CTkButton(window, text=title, command=command, fg_color="#48484D", 
+                                bg_color="#000001", border_color="#1E1D66", border_width=1.5,
+                                width=220, anchor="w")
+        settings_obj_list.append(iterbutton)
+        iterbutton.grid(row=n+1, column=0, pady=(6, 0), padx=(20,0))
 
 def ex():
     window.quit()
 
+#creating buttons
 buttons1=[
-    ["change_dim","Change dimensions of the window", chg_dim],
-    ["change_back", "Change background", change_background],
-    ["gmail", "Gmail", gmail],
-    ["macondo", "Macondo", Macondo],
-    ["start_record", "Start recording actions", start_record],
-    ["execute_record", "Execute record", choose_action],
-    ["exit", "Exit", ex]
+    ["settings", "Settings", "", settings],
+    ["gmail", "Gmail", "", gmail],
+    ["macondo", "Macondo", "", Macondo],
+    ["start_record", "Start recording actions", "", start_record],
+    ["execute_record", "Execute record", "", choose_action],
+    ["exit", "Exit", "exit_X.png", ex]
 ]
-for name, title, command in buttons1:
-    iterbutton=ttk.Button(window, text=title, command=command)
-    iterbutton.pack()
 
+def start():   
+    for n, (name, title, picture, command) in enumerate(buttons1):
+        if name=="exit":
+            image=Image.open(picture)
+            photo=CTkImage(image, image)
+            iterbutton=CTkButton(window, text=title, command=command, fg_color="#973B3B", 
+                                bg_color="#000001", border_color="#1E1D66", border_width=1.5,
+                                width=220, anchor="w", image=photo)
+            iterbutton.grid(pady=(50, 0), padx=(15,0), sticky="W")
+            button_obj_list.append(iterbutton)
+        else:
+            iterbutton=CTkButton(window, text=title, command=command, fg_color="#48484D", 
+                            bg_color="#000001", border_color="#1E1D66", border_width=1.5,
+                            width=220, anchor="w")
+            iterbutton.grid(pady=(6, 0), padx=(15,0), sticky="W")
+            button_obj_list.append(iterbutton)
+        pywinstyles.set_opacity(iterbutton, color="#000001")
+place_holder=CTkLabel(window, fg_color="transparent", height=50, text="Welcome at Start Assistant",
+                        bg_color="#000001", border_width=3, border_color="#2B2B68",
+                        corner_radius=10, text_color="#F9F9FA", font=("Comic Sans MS", 20))
+place_holder.grid(pady=(6, 0), padx=(0, 0))
+pywinstyles.set_opacity(place_holder, color="#000001")
+start()
 window.mainloop()
