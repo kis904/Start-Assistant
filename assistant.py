@@ -9,6 +9,7 @@ from PIL import Image
 from time import sleep, time
 import webbrowser, pywinstyles
 from pynput import mouse, keyboard
+from pynput.keyboard import Key, Listener
 from tkinter.messagebox import showinfo
 
 #           CHECK BACKGROUND SOURCE !!!!
@@ -34,6 +35,7 @@ stop_track=False
 mouse_moved=0
 button_obj_list=[]
 settings_obj_list=[]
+click_enabled=False
 
 #creating functions
 def back_ground(window, image_path, dim):
@@ -54,6 +56,9 @@ def back_ground(window, image_path, dim):
     background_label.image=photo
     background_label.place(relwidth=1, relheight=1)
 
+def end(win):
+    stop_track=True
+    win.destroy()
 def findImg(img_path, minSearchTime, confidence):
     img=Image.open(img_path)
     location=pyautogui.locateOnScreen(image=img, minSearchTime=minSearchTime, confidence=confidence)
@@ -78,9 +83,19 @@ except:
 
 def Macondo():
     os.startfile("C:/Program Files/Mozilla Firefox/firefox.exe")
-    start_mouse_track()
+    start_record()
     
-def start_mouse_track():
+def on_release(key):
+    if key==Key.alt:
+        photo=pyautogui.screenshot()
+        photo.save("picture.png")
+        click_enabled=True
+        sleep(2)
+        click_enabled=False
+        print("on release")
+
+
+def start_record():
     print("A")
     global clock
     clock=int(time())
@@ -89,25 +104,18 @@ def start_mouse_track():
         if window!="":
             window=pygetwindow.getWindowsWithTitle(window)[0]
             window.minimize()
-    mouse_listener=mouse.Listener(
-        on_click=mouse_track,
-        #on_move=mouse_move
-    )
-    mouse_listener.start()
-    s=0
-    while s<=10:
-        s+=1
-        sleep(float(1))
-    
-    mouse_listener.stop()
-    #mouse_listener.join()
+    with Listener(on_release=on_release) as keyboard_listener, \
+        mouse.Listener(on_click=mouse_track) as mouse_listener:
+            keyboard_listener.join()
+            mouse_listener.join()
 
 def mouse_track(x, y, button, pressed):
     global clock
     delta=int(time())-clock
     clock=int(time())
     print(clock, delta)
-    if button==mouse.Button.left and pressed:
+
+    if button==mouse.Button.left and pressed and click_enabled:
         focus=pygetwindow.getActiveWindowTitle()
         print("mouse button pressed", button, delta)
         with open("map.txt", "a+") as file:
@@ -181,7 +189,7 @@ def save_config(param, **kwargs):
             with open("map.txt", "a") as file:
                 file.write(f"!, action, {conf}\n")
             win.destroy()
-            start_mouse_track()
+            start_record()
     showinfo("Changes in config", "Saved changes successfully in config.txt")
 
 def retrieve_textinput(widget, win):
@@ -231,8 +239,8 @@ def choose_action():
     label=CTkLabel(chgwin, text="Choose the action that you want to execute:")
     label.pack()
 
-def start_record():
-    chgwin=Toplevel(window, takefocus=True)
+def set_rec_name():
+    chgwin=CTkToplevel(window, takefocus=True)
     chgwin.geometry("400x120")
     label=CTkLabel(chgwin, width=10, justify="left", text="You have 10 seconds to record your actions.\n If you need more time choose Continue in the pop-up window.\nWrite here the name of the new action:")
     dimensions=Text(chgwin, height=3, width=30)
@@ -267,6 +275,9 @@ def exit_setup():
         button.destroy()
     start()
 
+def ex():
+    window.quit()
+
 def settings():
     for button in button_obj_list:
         button.destroy()
@@ -289,19 +300,17 @@ def settings():
         settings_obj_list.append(iterbutton)
         iterbutton.grid(row=n+1, column=0, pady=(6, 0), padx=(20,0))
 
-def ex():
-    window.quit()
 
 #creating buttons
 buttons1=[
     ["settings", "Settings", "", settings],
     ["gmail", "Gmail", "", gmail],
     ["macondo", "Macondo", "", Macondo],
-    ["start_record", "Start recording actions", "", start_record],
+    ["start_record", "Start recording actions", "", set_rec_name],
     ["execute_record", "Execute record", "", choose_action],
     ["exit", "Exit", "exit_X.png", ex]
 ]
-
+window.quit()
 def start():   
     for n, (name, title, picture, command) in enumerate(buttons1):
         if name=="exit":
