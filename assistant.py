@@ -1,8 +1,8 @@
 import tkinter as tk
-from tkinter import*
+from tkinter import *
 from tkinter import ttk, filedialog
 import customtkinter
-from customtkinter import *
+from customtkinter import CTkButton, CTkToplevel, CTkLabel, CTkImage
 from PIL import Image, ImageTk
 import os, pyautogui, pytesseract, pygetwindow
 from PIL import Image
@@ -16,7 +16,7 @@ from tkinter.messagebox import showinfo
 
 #open config file
 #print("A")
-with open("config.txt", "r+", encoding="UTF-8") as config:
+with open("C:/Danimunka/startassist/config.txt", "r+", encoding="UTF-8") as config:
     lines=config.readlines()
     for line in lines:
         line.strip()
@@ -35,7 +35,9 @@ stop_track=False
 mouse_moved=0
 button_obj_list=[]
 settings_obj_list=[]
-click_enabled=False
+session=0
+#global first_letter
+first_letter=True
 
 #creating functions
 def back_ground(window, image_path, dim):
@@ -51,14 +53,14 @@ def back_ground(window, image_path, dim):
         y=int(r*height)
     print(x, y)
     image_rs=image.resize([x, y])
-    photo=ImageTk.PhotoImage(image_rs)
-    background_label=tk.Label(window, image=photo)
+    photo=PhotoImage(image_rs)
+    background_label=customtkinter.CTkCanvas(window, image=photo)
     background_label.image=photo
     background_label.place(relwidth=1, relheight=1)
 
 def end(win):
-    stop_track=True
     win.destroy()
+
 def findImg(img_path, minSearchTime, confidence):
     img=Image.open(img_path)
     location=pyautogui.locateOnScreen(image=img, minSearchTime=minSearchTime, confidence=confidence)
@@ -86,14 +88,19 @@ def Macondo():
     start_record()
     
 def on_release(key):
-    if key==Key.alt:
-        photo=pyautogui.screenshot()
-        photo.save("picture.png")
-        click_enabled=True
-        sleep(2)
-        click_enabled=False
-        print("on release")
-
+    if key==Key.esc:
+        keyboard_listener.stop()
+        mouse_listener.stop()
+        file.close()
+    else:
+        global first_letter
+        if first_letter:
+            global temp_session
+            temp_session=session
+            first_letter=False
+            file.write(f"\nwrite, {key}")
+        elif temp_session==session:
+            file.write(key)
 
 def start_record():
     print("A")
@@ -104,6 +111,12 @@ def start_record():
         if window!="":
             window=pygetwindow.getWindowsWithTitle(window)[0]
             window.minimize()
+    #global focus
+    #focus=pygetwindow.getActiveWindowTitle()
+    global keyboard_listener
+    global mouse_listener
+    global file
+    file=open("map.txt", "a", encoding="utf-8")
     with Listener(on_release=on_release) as keyboard_listener, \
         mouse.Listener(on_click=mouse_track) as mouse_listener:
             keyboard_listener.join()
@@ -114,12 +127,12 @@ def mouse_track(x, y, button, pressed):
     delta=int(time())-clock
     clock=int(time())
     print(clock, delta)
-
-    if button==mouse.Button.left and pressed and click_enabled:
-        focus=pygetwindow.getActiveWindowTitle()
+    if button==mouse.Button.left and pressed:
         print("mouse button pressed", button, delta)
-        with open("map.txt", "a+") as file:
-            file.write(f"click, {x};{y}, {delta}, {focus}\n")
+        focus=pygetwindow.getActiveWindowTitle()
+        session+=1
+        first_letter=True
+        file.write(f"click, {x};{y}, {delta}, {focus}\n")
 
 def mouse_move(x, y):
     global mouse_moved
@@ -142,7 +155,7 @@ def gmail():
         pyautogui.press('Enter')
 
 def overwrite(param, param2, conf):
-    with open("config.txt", "w") as file:
+    with open("config.txt", "w", encoding="utf-8") as file:
         new=[]
         target=f"{param} : {param2}"
         #print(lines)
@@ -154,7 +167,7 @@ def overwrite(param, param2, conf):
         return
 
 def save_config(param, **kwargs):
-    with open("config.txt", "a+") as config:
+    with open("config.txt", "a+", encoding="utf-8") as config:
         containes=False
         if param=="dimensions":
             widget=kwargs.get("widget")
@@ -186,7 +199,7 @@ def save_config(param, **kwargs):
             widget=kwargs.get("widget")
             win=kwargs.get("win")
             conf=widget.get("1.0", "end-1c")
-            with open("map.txt", "a") as file:
+            with open("map.txt", "a", encoding="utf-8") as file:
                 file.write(f"!, action, {conf}\n")
             win.destroy()
             start_record()
@@ -203,13 +216,12 @@ def execute_record(record, win=window):
     for window in s:
         if window!="":
             window=pygetwindow.getWindowsWithTitle(window)[0]
-            #window.minimize()
+            window.minimize()
     rec=False
     print(record)
-    with open("map.txt") as file:
+    with open("map.txt", encoding="utf-8") as file:
         for line in file:
             sp=line.split(", ")
-            print(sp)
             if sp[0]=="!" and sp[2].strip()==record:
                 rec=True
                 print(rec)
@@ -218,14 +230,22 @@ def execute_record(record, win=window):
                     return
                 [x,y]=sp[1].split(";")
                 sp[2]=sp[2].strip()
+                sp[3]=sp[3].strip()
+                focus=sp[3]
+                print(sp)
                 sleep(int(sp[2]))
+                if sp[3]!="\n":
+                    while focus!=pygetwindow.getActiveWindowTitle():
+                        sleep(1)
+                        print(pygetwindow.getActiveWindowTitle(), focus)
+                
                 pyautogui.leftClick(int(x), int(y))                                
                 print(int(x), int(y), int(sp[2]))
         print("End of action")
 
 def choose_action():
     action_list=[]
-    with open("map.txt") as file:
+    with open("map.txt", encoding="utf-8") as file:
         for line in file:
             if line.split(", ")[0]=="!":
                 action_list.append(line.split(", ")[2].strip())
@@ -233,11 +253,11 @@ def choose_action():
     print(action_list)
     chgwin=CTkToplevel(window, takefocus=True)
     chgwin.geometry("400x120")
+    label=CTkLabel(chgwin, text="Choose the action that you want to execute:")
+    label.pack()
     for action in action_list:
         iterbutton=CTkButton(chgwin, width=10, height=1, text=action, command=lambda: execute_record(action, chgwin))
         iterbutton.pack()
-    label=CTkLabel(chgwin, text="Choose the action that you want to execute:")
-    label.pack()
 
 def set_rec_name():
     chgwin=CTkToplevel(window, takefocus=True)
@@ -284,7 +304,7 @@ def settings():
     settings_list=[
         ["change_dim","Change dimensions of the window", "", chg_dim],
         ["change_back", "Change background", "", change_background],
-        ["exit", "Exit", "arrow.png", exit_setup]
+        ["exit", "Exit", "exit_left.png", exit_setup]
     ]
     for n, (name, title, picture, command) in enumerate(settings_list):
         if picture!="":
