@@ -5,7 +5,6 @@ import customtkinter
 from customtkinter import CTkButton, CTkToplevel, CTkLabel, CTkImage
 from PIL import Image, ImageTk
 import os, pyautogui, pytesseract, pygetwindow
-from PIL import Image
 from time import sleep, time
 import webbrowser, pywinstyles
 from pynput import mouse, keyboard
@@ -210,8 +209,7 @@ def retrieve_textinput(widget, win):
     win.destroy()
     return text
 
-def execute_record(record, win=window):
-    win.destroy()
+def execute_record(record):
     s=pygetwindow.getAllTitles()
     for window in s:
         if window!="":
@@ -228,19 +226,24 @@ def execute_record(record, win=window):
             elif rec==True:
                 if sp[0]=="!":
                     return
-                [x,y]=sp[1].split(";")
+                print(sp)
                 sp[2]=sp[2].strip()
                 sp[3]=sp[3].strip()
                 focus=sp[3]
-                print(sp)
-                sleep(int(sp[2]))
-                if sp[3]!="\n":
-                    while focus!=pygetwindow.getActiveWindowTitle():
-                        sleep(1)
-                        print(pygetwindow.getActiveWindowTitle(), focus)
-                
-                pyautogui.leftClick(int(x), int(y))                                
-                print(int(x), int(y), int(sp[2]))
+                t=0
+                while focus!=pygetwindow.getActiveWindowTitle():
+                    sleep(1)
+                    print(pygetwindow.getActiveWindowTitle(), focus)
+                    if t==sp[2] and sp[0]=="click":
+                        [x,y]=sp[1].split(";")
+                        pyautogui.leftClick(int(x), int(y))
+                if sp[0]=="click":
+                    [x,y]=sp[1].split(";")
+                    pyautogui.leftClick(int(x), int(y))                                
+                    print(int(x), int(y), int(sp[2]))
+                elif sp[0]=="write":
+                    pyautogui.typewrite(sp[1])
+                    print(sp[1])
         print("End of action")
 
 def choose_action():
@@ -251,13 +254,11 @@ def choose_action():
                 action_list.append(line.split(", ")[2].strip())
                 print(line.split(" ")[1].strip())
     print(action_list)
-    chgwin=CTkToplevel(window, takefocus=True)
-    chgwin.geometry("400x120")
-    label=CTkLabel(chgwin, text="Choose the action that you want to execute:")
-    label.pack()
-    for action in action_list:
-        iterbutton=CTkButton(chgwin, width=10, height=1, text=action, command=lambda: execute_record(action, chgwin))
-        iterbutton.pack()
+    for button in button_obj_list:
+        button.destroy()
+    for n, action in enumerate(action_list):
+        iterbutton=CTkButton(window, width=10, height=1, text=action, command=lambda: execute_record(action))
+        iterbutton.grid(row=n+1, column=0, pady=(6, 0), padx=(20,0))
 
 def set_rec_name():
     chgwin=CTkToplevel(window, takefocus=True)
@@ -271,10 +272,11 @@ def set_rec_name():
 
 def chg_dim():
     chgwin=CTkToplevel(master=window, takefocus=True)
+    chgwin.geometry(dim)
     chgwin.after(100, chgwin.lift)
     label=Label(chgwin, text="Write here the new dimensions \n in widthxheight format e.g 1080x720")
-    dimensions=Text(chgwin, height=50, width=100)
-    save=CTkButton(chgwin, width=50, height=25, command=lambda: save_config(param="dimensions", widget=dimensions, win=chgwin))
+    dimensions=Text(chgwin, height=5, width=50)
+    save=CTkButton(chgwin, width=50, height=25, text="Save", command=lambda: save_config(param="dimensions", widget=dimensions, win=chgwin))
     label.pack()
     dimensions.pack()
     save.pack()
