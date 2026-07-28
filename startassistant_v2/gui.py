@@ -5,6 +5,7 @@ from settings import Settings
 from record import Record
 from PIL import Image, ImageTk
 import pywinstyles
+from tkinter.messagebox import showinfo
 
 class GUI:
     def __init__(self):
@@ -12,20 +13,19 @@ class GUI:
         self.window.title("Start Assistant")
         self.window._set_appearance_mode("dark")
         self.window.geometry("500x600")
-        
+        self.im=Image.open("exit_left.png")
+        self.photo=CTkImage(self.im, self.im)
         #SET GLOBAL VARIABLES
         self.stop_track=False
         self.mouse_moved=0
         self.button_obj_list=[]
         self.settings_obj_list=[]
         self.session=0
-        #self.global first_letter
-        self.first_letter=True
 
         #IMPORT
         self.config=Config()
         self.settings=Settings(self)
-        self.record=Record(self)
+        self.record=Record()
         self.config.start()
         self.window.geometry(self.config.dim)
 
@@ -51,8 +51,9 @@ class GUI:
         #creating buttons
         self.home_buttons=[
             ["settings", "Settings", "", self.settings.settings],
-            ["start_record", "Start recording actions", "", self.record.set_rec_name],
-            ["execute_record", "Execute record", "", self.record.choose_action],
+            ["start_record", "Start recording actions", "", self.set_rec_name],
+            ["execute_record", "Execute record", "", self.choose_action],
+            ["exit", "Exit", "exit_X.png", quit]
         ]
         self.window.quit()
         place_holder=CTkLabel(self.window, fg_color="transparent", height=50, text="Welcome at Start Assistant",
@@ -81,6 +82,35 @@ class GUI:
             pywinstyles.set_opacity(iterbutton, color="#000001")
     def run(self):
         self.window.mainloop()
+
+    def choose_action(self):
+        action_list=[]
+        with open("map.txt", encoding="utf-8") as self.file:
+            for line in self.file:
+                if line.split(", ")[0]=="!":
+                    action_list.append(line.split(", ")[2].strip())
+                    print(line.split(" ")[1].strip())
+        print(action_list)
+        if action_list!=[]:
+            chgwin=CTkToplevel(self.window, takefocus=True)
+            chgwin.geometry("400x120")
+            label=CTkLabel(chgwin, text="Choose the action that you want to execute:")
+            label.pack()
+            for action in action_list:
+                iterbutton=CTkButton(chgwin, width=10, height=1, text=action, command=lambda: self.record.execute_record(action, chgwin))
+                iterbutton.pack()
+        else:
+            showinfo("No records available", "You have no records yet, first start with recording an action", icon="warning")
+
+    def set_rec_name(self):
+        chgwin=CTkToplevel(self.window, takefocus=True)
+        chgwin.geometry("400x120")
+        label=CTkLabel(chgwin, width=10, justify="left", text="Press Esc if you're ready, otherwise don't as it stops recording\nWrite here the name of the new action:")
+        dimensions=CTkTextbox(chgwin, height=50, width=300)
+        save=CTkButton(chgwin, width=10, height=1, text="Save", command=lambda: self.config.save_config(param="action", widget=dimensions, win=chgwin))
+        label.pack()
+        dimensions.pack()
+        save.pack()
 
 if __name__=="__main__":
     app=GUI()

@@ -1,0 +1,5 @@
+-----------------------------------
+gui.py ->config.py: read config, modify it, return values, no gui actoions
+        ->settings.py: create settings menu, actions, gui added
+        ->record.py: just recording and implementing algorithms, no gui actions
+        ->

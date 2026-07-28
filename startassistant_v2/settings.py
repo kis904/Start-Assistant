@@ -1,6 +1,6 @@
 from customtkinter import CTkButton, CTkImage, CTkToplevel, filedialog
 from PIL import Image, ImageTk
-from tkinter import *
+from tkinter import Text, Label
 
 class Settings:
     def __init__(self, gui):
@@ -8,7 +8,6 @@ class Settings:
         self.config=gui.config
 
     def settings(self):
-        img=Image.open("exit_X.png")
         self.settings_obj_list=[]
         for button in self.gui.button_obj_list:
             button.destroy()
@@ -45,9 +44,9 @@ class Settings:
     def change_background(self):
         chgwin=CTkToplevel(self.gui.window, takefocus=True)
         chgwin.after(100, chgwin.lift)
-        label=Label(chgwin, text="Select the new background \n supported file format is jpg")
+        label=Label(chgwin, text="Select the new background \n supported self.file format is jpg")
         label.pack()
-        background=filedialog.askopenfile(title="Select the new background", filetypes=[("JPEG", "*.jpg")])
+        background=self.filedialog.askopenself.file(title="Select the new background", filetypes=[("JPEG", "*.jpg")])
         background=background.name
         self.config.save_config(param="background", win=chgwin, conf=background)
         print(background)

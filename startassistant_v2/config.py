@@ -3,7 +3,7 @@ from tkinter.messagebox import showinfo
 from record import Record
 
 class Config:
-    #open config file
+    #open config self.file
     #print("A")
     def start(self):
         self.record=Record()
@@ -22,7 +22,7 @@ class Config:
                     print(self.background_route)
 
     def overwrite(self, param, param2, conf):
-        with open("config.txt", "w", encoding="utf-8") as file:
+        with open("config.txt", "w", encoding="utf-8") as self.file:
             self.new=[]
             self.target=f"{param} : {param2}"
             #print(lines)
@@ -30,7 +30,7 @@ class Config:
                 if self.line!=self.target:
                     self.new.append(self.line)
             self.new.append(f"{param} : {conf}\n")
-            file.writelines(self.new)
+            self.file.writelines(self.new)
             return
 
     def save_config(self, param, **kwargs):
@@ -66,8 +66,8 @@ class Config:
                 widget=kwargs.get("widget")
                 win=kwargs.get("win")
                 conf=widget.get("1.0", "end-1c")
-                with open("map.txt", "a", encoding="utf-8") as file:
-                    file.write(f"!, action, {conf}\n")
+                with open("map.txt", "a", encoding="utf-8") as self.file:
+                    self.file.write(f"!, action, {conf}\n")
                 win.destroy()
                 self.record.start_record()
         showinfo("Changes in config", "Saved changes successfully in config.txt")
