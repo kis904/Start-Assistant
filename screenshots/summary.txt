@@ -1,0 +1,3 @@
+Here you can find the screenshots of the sites, documentations, reddit pages where I spent a lot of time looking for answer for my errors or exploring new python library, functions...
+All in all it's 3.75 hours that I spent with that and wasn't logged with hackatime.
+Thanks for caring with that matter!
