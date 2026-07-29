@@ -10,12 +10,17 @@ Methods that used to mimic user's activity:
   2. My second thought is what I want to make next, that it takes screenshots when clicked and with the exact coordinates of the click and pytesseract ocr module, it could get for example the text of the button that the user clicked. This would help us in 2 problems: first
      if the design changes it could still locate the text of the button that the user clicked, second if it takes more time to load it won't continue until it can locate that specific text. So it would be an important update to the program
      #2026.07.23 until now I could make it monitor window in focus and wait until it's not the desired one. Also started working on saving screenshots when clicking and on screen text detection with Pytesseract OCR. That part is in the pytesseractocr.py file, to make it easier to debug, test
+  3. It can monitor, record and remake keyboard activities like typing, just hotkeys not yet
 
 Future plans:
   1. Make a new version that the one main file is split to multiple smaller and make it class based program.
+  #2026.07.29. Already has a working better version than the single file, now that's the main
+  2. Add AI speech recognition and make it controllable just with voice
+  3. Make recording hotkeys available
 
 Sorry for the messy code, I always place test print commands to see where the code breaks or what it skips when it shouldn't and import a lot of things and make unused functions as I hope once I get there I'll use them.
 Main problems that I struggled a lot with:
-1. I had a lot of trouble with the proper handling of the config file, solved partially but still have decoding and encoding problems
+1. I had a lot of trouble with the proper handling of the config file, solved partially but still have decoding and encoding problems #solved
 2. To create buttons well, as IDK how, but it started the buttons' functions, which were in a list, so I have to fix that too, as the main idea was to store the buttons main characteristics in a list such as name, title, command when pressed and create them with a 'for' cycle that iterates through that list and applies them #solved
 3. Not a problem, but it took so much time to design the GUI, set the colors, always relaunch the code, see how it looks and then modify if it's ugly... The same problem when setting padding, fonts, borders and so on
+4. Get keyboard monitoring and saving to map.txt and reproducate it, as the listener returns a KeyCode or Key object not string, that can't be written into file because not string, but it's hard to recover it's name. In addition to reproducate, the command waits for a string too. #solved
