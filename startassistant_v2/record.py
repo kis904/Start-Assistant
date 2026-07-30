@@ -11,12 +11,13 @@ class Record:
         self.first_letter=True
 
     def on_release(self, key):
+        print(key)
         if key==Key.esc:
             self.keyboard_listener.stop()
             self.mouse_listener.stop()
             try:
                 if self.string!=[]:
-                    self.file.write(f"write, {"".join(self.string)}\n")
+                    self.file.write(f"write, {"".join(self.string)}, {self.focus}\n")
             except:
                 print("Error during writing", self.string)
             self.file.close()
@@ -24,19 +25,25 @@ class Record:
             if self.first_letter:
                 self.temp_session=self.session
                 self.first_letter=False
+                self.focus=pygetwindow.getActiveWindowTitle()
                 try:
-                    if self.string!=[]:
-                        self.file.write(f"write, {"".join(self.string)}\n")
+                    if self.string!=[]:                        
+                        self.file.write(f"write, {"".join(self.string)}, {self.focus}\n")
                 except:
                     print("Error during writing", self.string)
                 self.string=[]
-            elif self.first_letter or self.temp_session==self.session:
+            if self.first_letter or self.temp_session==self.session:
+                print("IN THE RECORD")
                 try:
                     print("alphanumeric {0} pressed".format(key.char))
                     self.string.append("{0}".format(key.char))
                 except AttributeError:
                     print("special key {0} pressed".format(key))
-                    self.string.append("{0}".format(key))
+                    self.file.write(f"write, {"".join(self.string)}, {self.focus}\n")
+                    self.string=[]
+                    keystring="{0}".format(key).split(".")
+                    self.file.write(f"specwrite, {keystring[1]}\n")
+                    self.focus=pygetwindow.getActiveWindowTitle()
                 print(key, self.string)
 
     def start_record(self):
@@ -92,22 +99,31 @@ class Record:
                     rec=True
                     print(rec)
                 elif rec==True:
+                    print(sp)
                     if sp[0]=="!":
                         return
-                    elif sp[0]=="click":
+                    if sp[0]=="click":
                         [x,y]=sp[1].split(";")
-                        sp[2]=sp[2].strip()
-                        sp[3]=sp[3].strip()
+                        sp[3]=sp[3].strip("\n")
                         focus=sp[3]
-                        print(sp)
+                        #print(sp)
                         sleep(int(sp[2]))
                         if sp[3]!="\n":
                             while focus!=pygetwindow.getActiveWindowTitle():
                                 sleep(1)
                                 print(pygetwindow.getActiveWindowTitle(), focus)
-                        
                         pyautogui.leftClick(int(x), int(y))                                
                         print(int(x), int(y), int(sp[2]))
-                    elif sp[0]=="write":
-                        pyautogui.typewrite(sp[1].strip())
+                    if sp[0]=="write":
+                        focus=sp[2].strip("\n")
+                        while focus!=pygetwindow.getActiveWindowTitle():
+                                sleep(1)
+                                print(pygetwindow.getActiveWindowTitle(), focus)
+                        pyautogui.typewrite(sp[1])
+                        print(sp[1])
+                    print(sp[0])
+                    if sp[0]=="specwrite":
+                        sp[1]=sp[1].strip("\n")
+                        pyautogui.press(sp[1])
+                        print("pressed", sp[1])
             print("End of action")

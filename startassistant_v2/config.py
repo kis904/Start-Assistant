@@ -18,23 +18,31 @@ class Config:
                     self.dim.split()
                 if sp[0]=="background":
                     self.background_route=sp[1].strip()
-                    self.background_route.split()
                     print(self.background_route)
-
+                if sp[0]=="fontsize":
+                    self.fontsize=sp[1].strip()
+                if sp[0]=="font":
+                    self.font=sp[1].strip()
+                
     def overwrite(self, param, param2, conf):
+        with open("config.txt", "r", encoding="utf-8") as self.file:
+            self.lines=self.file.readlines()
         with open("config.txt", "w", encoding="utf-8") as self.file:
             self.new=[]
             self.target=f"{param} : {param2}"
-            #print(lines)
-            for self.line in self.lines:
-                if self.line!=self.target:
-                    self.new.append(self.line)
+            print(self.lines)
+            for line in self.lines:
+                print(line, self.target)
+                if line!=self.target:
+                    self.new.append(line)
             self.new.append(f"{param} : {conf}\n")
             self.file.writelines(self.new)
             return
 
     def save_config(self, param, **kwargs):
-        with open("config.txt", "a+", encoding="utf-8") as config:
+        with open("config.txt", "r+", encoding="utf-8") as config:
+            self.lines=config.readlines()
+            #print(self.lines)
             containes=False
             if param=="dimensions":
                 widget=kwargs.get("widget")
@@ -50,6 +58,7 @@ class Config:
                 if containes==False:
                     config.write(f"\ndimensions : {conf}")
                 win.destroy()
+                showinfo("Changes in config", "Saved dimensions successfully in config.txt", icon="info")
             elif param=="background":
                 conf=kwargs.get("conf")
                 for line in self.lines:
@@ -62,12 +71,33 @@ class Config:
                 if containes==False:
                     print("B")
                     config.write(f"background : {conf}\n")
+                showinfo("Changes in config", "Saved background route successfully in config.txt", icon="info")
             elif param=="action":
-                widget=kwargs.get("widget")
-                win=kwargs.get("win")
-                conf=widget.get("1.0", "end-1c")
+                conf=kwargs.get("conf")
                 with open("map.txt", "a", encoding="utf-8") as self.file:
                     self.file.write(f"!, action, {conf}\n")
-                win.destroy()
-                self.record.start_record()
-        showinfo("Changes in config", "Saved changes successfully in config.txt")
+            elif param=="fontsize":
+                conf=kwargs.get("conf")
+                for line in self.lines:
+                    sp=line.split(" : ")
+                    print(sp)
+                    if sp[0]=="fontsize":
+                        print("A")
+                        self.overwrite(sp[0], sp[1], conf)
+                        containes=True
+                if containes==False:
+                    print("B fontsize")
+                    config.write(f"fontsize : {conf}\n")
+                showinfo("Changes in config", "Saved font size successfully in config.txt", icon="info")
+            elif param=="font":
+                conf=kwargs.get("conf")
+                for line in self.lines:
+                    sp=line.split(" : ")
+                    print(sp)
+                    if sp[0]=="font":
+                        print("A")
+                        self.overwrite(sp[0], sp[1], conf)
+                        containes=True
+                if containes==False:
+                    print("B font")
+                    config.write(f"font : {conf}\n")            
