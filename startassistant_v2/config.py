@@ -18,7 +18,7 @@ class Config:
                     self.dim.split()
                 if sp[0]=="background":
                     self.background_route=sp[1].strip()
-                    print(self.background_route)
+                    #print(self.background_route)
                 if sp[0]=="fontsize":
                     self.fontsize=sp[1].strip()
                 if sp[0]=="font":
@@ -30,9 +30,9 @@ class Config:
         with open("config.txt", "w", encoding="utf-8") as self.file:
             self.new=[]
             self.target=f"{param} : {param2}"
-            print(self.lines)
+            #print(self.lines)
             for line in self.lines:
-                print(line, self.target)
+                #print(line, self.target)
                 if line!=self.target:
                     self.new.append(line)
             self.new.append(f"{param} : {conf}\n")
@@ -65,11 +65,11 @@ class Config:
                     sp=line.split(" : ")
                     #print(sp)
                     if sp[0]=="background":
-                        print("A")
+                        #print("A")
                         self.overwrite(sp[0], sp[1], conf)
                         containes=True
                 if containes==False:
-                    print("B")
+                    #print("B")
                     config.write(f"background : {conf}\n")
                 showinfo("Changes in config", "Saved background route successfully in config.txt", icon="info")
             elif param=="action":
@@ -80,24 +80,25 @@ class Config:
                 conf=kwargs.get("conf")
                 for line in self.lines:
                     sp=line.split(" : ")
-                    print(sp)
+                    #print(sp)
                     if sp[0]=="fontsize":
-                        print("A")
+                        #print("A")
                         self.overwrite(sp[0], sp[1], conf)
                         containes=True
                 if containes==False:
-                    print("B fontsize")
+                    #print("B fontsize")
                     config.write(f"fontsize : {conf}\n")
                 showinfo("Changes in config", "Saved font size successfully in config.txt", icon="info")
             elif param=="font":
                 conf=kwargs.get("conf")
                 for line in self.lines:
                     sp=line.split(" : ")
-                    print(sp)
+                    #print(sp)
                     if sp[0]=="font":
-                        print("A")
+                        #print("A")
                         self.overwrite(sp[0], sp[1], conf)
                         containes=True
                 if containes==False:
-                    print("B font")
-                    config.write(f"font : {conf}\n")            
+                    #print("B font")
+                    config.write(f"font : {conf}\n")
+                showinfo("Changes in config", "Saved font successfully in config.txt", icon="info")

@@ -6,6 +6,7 @@ from record import Record
 from PIL import Image, ImageTk
 import pywinstyles
 from tkinter.messagebox import showinfo
+from time import sleep
 
 class GUI:
     def __init__(self):
@@ -37,7 +38,7 @@ class GUI:
             self.font=self.config.font
         except:
             self.font="Comic Sans MS"
-
+        #print(self.font)
 
         self.window.grid_columnconfigure(1,weight=1)
         self.window.grid_rowconfigure(0, weight=0)
@@ -68,14 +69,15 @@ class GUI:
             ["execute_record", "Execute record", "play.png", self.choose_action],
             ["exit", "Exit", "exit_X.png", self.exit]
         ]
-        place_holder=CTkLabel(self.window, fg_color="transparent", height=50, text="Welcome at Start Assistant",
-                                bg_color="#000001", border_width=3, border_color="#2B2B68",
-                                corner_radius=10, text_color="#F9F9FA", font=("self.font", 20))
-        place_holder.grid(pady=(6, 20), padx=(10, 0))
-        pywinstyles.set_opacity(place_holder, color="#000001")
         self.start()
 
-    def start(self):   
+    def start(self):  
+        place_holder=CTkLabel(self.window, fg_color="transparent", height=50, text="Welcome at Start Assistant",
+                                bg_color="#000001", border_width=3, border_color="#2B2B68",
+                                corner_radius=10, text_color="#F9F9FA", font=(self.font, 20))
+        place_holder.grid(pady=(6, 20), padx=(10, 0))
+        pywinstyles.set_opacity(place_holder, color="#000001")
+        self.button_obj_list.append(place_holder)
         for n, (name, title, picture, command) in enumerate(self.home_buttons):
             if picture!="":
                 image=Image.open(picture)
@@ -83,18 +85,18 @@ class GUI:
                 if name=="exit":
                     iterbutton=CTkButton(self.window, text=title, command=command, fg_color="#973B3B", 
                                                         bg_color="#000001", border_color="#1E1D66", border_width=1.5,
-                                                        width=220, anchor="w", image=photo, font=("self.font", int(self.config.fontsize)))
+                                                        width=220, anchor="w", image=photo, font=(self.font, int(self.font_size)))
                     iterbutton.grid(pady=(50, 0), padx=(25,0), sticky="W")
                 else:
                     iterbutton=CTkButton(self.window, text=title, command=command, fg_color="#48484D", 
                                         bg_color="#000001", border_color="#1E1D66", border_width=1.5,
-                                        width=220, anchor="w", image=photo, font=("self.font", int(self.config.fontsize)))
+                                        width=220, anchor="w", image=photo, font=(self.font, int(self.font_size)))
                     iterbutton.grid(pady=(6, 2), padx=(25,0), sticky="W")
                 self.button_obj_list.append(iterbutton)
             else:
                 iterbutton=CTkButton(self.window, text=title, command=command, fg_color="#48484D", 
                                 bg_color="#000001", border_color="#1E1D66", border_width=1.5,
-                                width=220, anchor="w", font=("self.font", int(self.config.fontsize)))
+                                width=220, anchor="w", font=(self.font, int(self.font_size)))
                 iterbutton.grid(pady=(6, 0), padx=(25,0), sticky="W")
                 self.button_obj_list.append(iterbutton)
             pywinstyles.set_opacity(iterbutton, color="#000001")
@@ -111,42 +113,47 @@ class GUI:
                 if line.split(", ")[0]=="!":
                     action_list.append(line.split(", ")[2].strip())
                     print(line.split(" ")[2].strip())
-        print(action_list)
+        #print(action_list)
         if action_list!=[]:
             chgwin=CTkToplevel(self.window, takefocus=True, fg_color="#313135")
+            chgwin.title("Select the action")
             #chgwin.geometry("400x120")
             #chgwin._set_appearance_mode("dark")
             label=CTkLabel(chgwin, text="Choose the action that you want to execute:", text_color="#7575C5", 
-                           font=("self.font", int(self.config.fontsize)))
-            label.grid(padx=(10,0), pady=(6,10))
+                           font=("self.font", int(self.font_size)))
+            label.grid(padx=(10,10), pady=(6,17))
             for action in action_list:
                 iterbutton=CTkButton(chgwin, text=action, 
                                      command=lambda: self.record.execute_record(action, chgwin), fg_color="#48484D", 
                                 bg_color="#000001", border_color="#1E1D66", border_width=1.5,
-                                    width=220, anchor="w", font=("self.font", int(self.config.fontsize)))
-                iterbutton.grid(padx=(20,0), pady=(6, 0), sticky="W")
+                                    width=220, anchor="w", font=(self.font, int(self.font_size)))
+                iterbutton.grid(padx=(20,0), pady=(0,6), sticky="W")
                 pywinstyles.set_opacity(iterbutton, color="#000001")
-            chgwin.focus=True
+            sleep(1)
+            chgwin.lift(self.window)
+            
         else:
             showinfo("No records available", "You have no records yet, first start with recording an action", icon="warning")
 
     def set_rec_name(self):
-        chgwin=CTkToplevel(self.window, takefocus=True)
-        chgwin.geometry("400x120")
-        label=CTkLabel(chgwin, width=10, justify="left", text="Press Esc if you're ready, otherwise don't as it stops recording\nWrite here the name of the new action:")
+        chgwin=CTkToplevel(self.window)
+        chgwin.title("Set the name of your record")
+        label=CTkLabel(chgwin, width=10, justify="left", text="Press Esc if you're finished, otherwise don't as it stops recording\nWrite here the name of the new action:")
         dimensions=CTkTextbox(chgwin, height=50, width=300)
         save=CTkButton(chgwin, width=10, height=1, text="Save",  fg_color="#0CB854",
                        command=lambda: self.rec_sequence(widget=dimensions, win=chgwin))
-        label.pack()
-        dimensions.pack()
+        label.pack(pady=(6, 15), padx=(6, 15))
+        dimensions.pack(pady=(0,6))
         save.pack()
+        sleep(1)
+        chgwin.lift(self.window)
 
     def rec_sequence(self, widget, win):
         conf=widget.get("1.0", "end-1c")
         win.destroy()
         self.config.save_config(param="action", conf=conf)
         self.record.start_record()
-        self.window.focus_set()
+        self.window.lift()
         showinfo("Changes in records", "Saved user events successfully in map.txt", icon="info")
 
 if __name__=="__main__":
