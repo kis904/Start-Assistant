@@ -1,0 +1,3 @@
+dimensions : 500x600
+fontsize : 17
+font : Eccentric Std
