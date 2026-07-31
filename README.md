@@ -1,4 +1,7 @@
 # Start-Assistant
+Installation manual:
+To install, clone this folder first, then start the program with launching the gui.exe. It opens a command prompt and an app with GUI. You can use the app, just ignore the command line. If you have questions how to use it, watch the demo, every feature is shown there.
+
 An assistant that helps you in basic tasks, so it can log in to sites, if configured well.
 Coded in python, it uses tkinter, ttk for GUI.
 Has a config.txt file that it handles automatically, updates, reades, applies the settings in it.
