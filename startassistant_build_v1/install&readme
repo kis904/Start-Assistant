@@ -1,0 +1,7 @@
+This is the first build of Start Assistant.
+
+It has some known issues:
+  1. Opening command prompt
+  2. Sometimes pop-up windows get hidden
+
+You can start it by launching the gui.exe
