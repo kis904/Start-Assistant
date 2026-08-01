@@ -4,4 +4,7 @@ It has some known issues:
   1. Opening command prompt
   2. Sometimes pop-up windows get hidden
 
-You can start it by launching the gui.exe
+Installation setup:
+Copy this folder: startassistant_build_v1/StartAssistant_v1
+Unzip it
+You can start it by launching the gui.exe, ignore the command line
