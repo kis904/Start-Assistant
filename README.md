@@ -2,19 +2,28 @@
 
 Installation manual:
 To install, clone this folder first: 
+
 Copy this folder: startassistant_build_v1/StartAssistant_v1
+
 Unzip it, then start the program with launching the gui.exe. It opens a command prompt and an app with GUI. You can use the app, just ignore the command line. 
 
 How to use it:
 First you can see the home page: 
   1. Settings opens the settings tab where you can change font, font size and the dimensions of this window in pixel
   2. Start recording, if you click on that you can set the name of the action that you'll record in a pop-up window. Write it into the text field then click save.
+     
           How it records:
+     
           a) It'll minimize every window, so you'll start from your Desktop
+     
           b) Now every click you make, every button you hit will be recorded. It can't record hotkeys yet.
+     
           c) IMPORTANT: IT STOPS RECORDING IF YOU HIT THE ESC BUTTON
-  4. Execute record: here you can select which recorded action you want to execute by clicking on it on the pop-up window.
-  5. Exit: it closes the program
+     
+  3. Execute record: here you can select which recorded action you want to execute by clicking on it on the pop-up window.
+    
+  4. Exit: it closes the program
+
 If you have questions how to use it, watch the demo, every feature is shown there.
 
 An assistant that helps you in basic tasks, so it can log in to sites, if configured well.
